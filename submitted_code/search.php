@@ -221,28 +221,25 @@ function getNormalisedBingResults($query , $MaxResults)
 
 			foreach ( $json->webPages->value as $value ) 
 			{ 
+								
+                            if ( strpos($value->displayUrl, $method) === TRUE ) {
 				
+                                $URL = $value->displayUrl;
+                                
+                            } else {
 				
-				
-				if ( strpos($value->displayUrl, $method) === TRUE ) {
-					$URL = $value->displayUrl;
-				} else {
-					$url = $value->displayUrl;
-					$URL = substr_replace( $url, $method, 0, 0 );
-				}
-				
-				
+                                $url = $value->displayUrl;
+				$URL = substr_replace( $url, $method, 0, 0 );
+                                
+                            }
 				
 				$SNIPPET ="";
 				if ( isset($value->snippet ) )
 				{
 					$SNIPPET = $value->snippet;
-				}
-				else
-				{
+				} else {
 					$SNIPPET = $value->name;
 				}
-				
 				
 				$normalisedArray[] =  new SearchItem($Engine,$Rank,$URL,$SNIPPET); 
 				$Rank--;	
