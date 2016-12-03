@@ -53,7 +53,7 @@ function getNormalisedGoogleResults($query , $MaxResults){
     }
     return $normalisedArray;
 }
-
+/*
 function getNormalisedBingResults($query , $MaxResults)
 {
 	
@@ -103,6 +103,99 @@ function getNormalisedBingResults($query , $MaxResults)
 							'ignore_errors' => true,
 
 							'header' => "Authorization: Basic $auth")
+
+				);
+
+				
+		$context = stream_context_create($data);
+
+		// Get the response from Bing.
+		$response = @file_get_contents($requestUri, 0, $context); 
+		
+		$json = json_decode($response); 
+		
+		$Engine = "Bing";
+
+		
+		if( is_object($json)  )
+		{
+		
+			$NoOfResultsGathered = $NoOfResultsGathered + count($json->d->results);
+
+			foreach ( $json->d->results as $value ) 
+			{ 
+			
+				$URL = $value->Url;
+				
+				$SNIPPET ="";
+				if ( isset($value->Description ) )
+				{
+					$SNIPPET = $value->Description;
+				}
+				else
+				{
+					$SNIPPET = $value->Title;
+				}
+				
+				
+				$normalisedArray[] =  new SearchItem($Engine,$Rank,$URL,$SNIPPET); 
+				$Rank--;	
+			}
+		}
+   }
+   
+  // echo "\$NoOfResultsGathered". $NoOfResultsGathered;
+   
+   
+   return $normalisedArray;
+}
+*/
+//Bing version5 function
+function getNormalisedBingResults($query , $MaxResults)
+{
+	
+	$Rank = 100; //$MaxResults;
+	$normalisedArray = array();
+   
+	// Logic to call the search engine
+	// Logic to added to the normalised array
+
+	$acctKey = 'f272db0528444b25b0070989564c1e6c';
+
+	// Encode the query and the single quotes that must surround it.
+	
+	$Tries=0;
+        $NoOfResultsGathered = 0;
+	while ( ($NoOfResultsGathered < $MaxResults ) && ( $Tries < 5) )
+	{
+		$Tries++; // used as safety just in case caught in a loop
+		$NoToSkip = 0;
+		$NoOfRssultstoResquest = 50;
+		if( $MaxResults <= 50) // less than 50
+		{
+			$NoToSkip = 0;
+			$NoOfRssultstoResquest = $MaxResults;
+		}
+		else // 100
+        {
+			$NoOfRssultstoResquest = 50;
+			$NoToSkip = 50 ;
+		}		
+			
+		// Construct the full URI for the query.
+		$requestUri = "https://api.cognitive.microsoft.com/bing/v5.0/search?responseFilter=Webpages&q=$query&count=$NoOfRssultstoResquest&offset=$NoToSkip&safesearch=off'"; 
+
+		
+		// Encode the credentials and create the stream context.
+		$auth = base64_encode("$acctKey:$acctKey");
+
+		$data = array(
+
+					'http' => array(
+
+							'method' => "GET",
+
+							'header' => "Ocp-Apim-Subscription-Key: $auth")
 
 				);
 
