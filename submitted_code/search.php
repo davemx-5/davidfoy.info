@@ -183,7 +183,7 @@ function getNormalisedBingResults($query , $MaxResults)
 		}		
 			
 		// Construct the full URI for the query.
-		$requestUri = "https://api.cognitive.microsoft.com/bing/v5.0/search?responseFilter=Webpages&q=$query&count=$NoOfRssultstoResquest&offset=$NoToSkip&safesearch=off'"; 
+		$requestUri = "https://api.cognitive.microsoft.com/bing/v5.0/search?responseFilter=Webpages&q=$query&count=$NoOfRssultstoResquest&offset=$NoToSkip&safesearch=off"; 
 
 		
 		// Encode the credentials and create the stream context.
@@ -195,7 +195,7 @@ function getNormalisedBingResults($query , $MaxResults)
 
 							'method' => "GET",
 
-							'header' => "Ocp-Apim-Subscription-Key: $auth")
+							'header' => "Ocp-Apim-Subscription-Key: $acctKey")
 
 				);
 
@@ -207,27 +207,40 @@ function getNormalisedBingResults($query , $MaxResults)
 		
 		$json = json_decode($response); 
 		
+		//var_dump($json);
+		
 		$Engine = "Bing";
 
 		
 		if( is_object($json)  )
 		{
 		
-			$NoOfResultsGathered = $NoOfResultsGathered + count($json->d->results);
+			$NoOfResultsGathered = $NoOfResultsGathered + count($json->webPages->value);
 
-			foreach ( $json->d->results as $value ) 
+			$method = "https://";
+
+			foreach ( $json->webPages->value as $value ) 
 			{ 
-			
-				$URL = $value->Url;
+				
+				
+				
+				if ( strpos($value->displayUrl, $method) === TRUE ) {
+					$URL = $value->displayUrl;
+				} else {
+					$url = $value->displayUrl;
+					$URL = substr_replace( $url, $method, 0, 0 );
+				}
+				
+				
 				
 				$SNIPPET ="";
-				if ( isset($value->Description ) )
+				if ( isset($value->snippet ) )
 				{
-					$SNIPPET = $value->Description;
+					$SNIPPET = $value->snippet;
 				}
 				else
 				{
-					$SNIPPET = $value->Title;
+					$SNIPPET = $value->name;
 				}
 				
 				
@@ -241,6 +254,7 @@ function getNormalisedBingResults($query , $MaxResults)
    
    
    return $normalisedArray;
+   //print_r($normalisedArray);
 }
 
 function getNormalisedblekkoResults($query, $MaxResults)
